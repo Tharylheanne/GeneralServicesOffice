@@ -1,0 +1,120 @@
+<?php  
+session_start();
+
+$connect = mysqli_connect("localhost", "root", "", "gso+asset");
+$number = count($_POST['accountablePerson']);
+
+if ($number > 0) {
+     for ($i=0; $i < $number; $i++) { 
+          if (trim($_POST['accountablePerson'][$i] != '')) {
+              $serialNo = $connect->real_escape_string($_POST['serialNo'][$i]);
+              $propertyNo = $connect->real_escape_string($_POST['propertyNo'][$i]);
+              $accountablePersons = $connect->real_escape_string($_POST['accountablePerson'][$i]);
+              $AREno = $connect->real_escape_string($_POST['AREno']);
+
+              $article = strtoupper($_POST['article']);
+              $brand = strtoupper($_POST['brand']);
+              $particulars = $_POST['particulars'];
+              $eNGAS = $_POST['eNGAS'];
+              $acquisitionDate = $_POST['acquisitionDate'];
+              $unitValue = $_POST['unitValue'];
+              $accountNumber = $_POST['accountNumber'];
+              $estimatedLife = $_POST['estimatedLife'];
+              $unitOfMeasure = $_POST['unitOfMeasure'];
+              $unitValue = $_POST['unitValue'];
+              $quantity = $_POST['balancePerCard'];
+              $officeName = $_POST['officeName'];
+              $yearsOfService = $_POST['yearsOfService'];
+              $monthlyDepreciation = $_POST['monthlyDepreciation'];
+              $accumulatedDepreciation = $_POST['accumulatedDepreciation'];
+              $bookValue = $_POST['bookValue'];
+
+              $dateReceived = $_POST['dateReceived'];
+              $onhandPerCount = $_POST['onhandPerCount'];
+              $soQty = $_POST['soQty'];
+              $soValue = $_POST['soValue'];
+              $previousCondition = $_POST['previousCondition'];
+              $location = $_POST['location'];
+              $currentCondition = $_POST['current_condition'];
+              $dateOfPhysicalInventory = $_POST['dateOfPhysicalInventory'];
+              $remarks = $_POST['remarks'];
+              $supplier = strtoupper($_POST['supplier']);
+              $POnumber = $_POST['POno'];
+              $AIRnumber = $_POST['AIRnumber'];
+              $notes = $_POST['notes'];
+              $jevNo = $_POST['jevNo'];
+
+              //Insert data into the generalproperties table
+              $generalPropertiesQuery = "INSERT INTO generalproperties
+               (
+                    article,
+                    brand,
+                    serialNo,
+                    particulars,
+                    eNGAS,
+                    acquisitionDate,
+                    acquisitionCost,
+                    propertyNo,
+                    accountNumber,
+                    estimatedLife,
+                    unitOfMeasure,
+                    unitValue,
+                    quantity,
+                    officeName,
+                    accountablePerson,
+                    scannedDocs,
+                    yearsOfService,
+                    monthlyDepreciation,
+                    accumulatedDepreciation,
+                    bookValue)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+               $stmt = $connect->prepare($generalPropertiesQuery);
+               $stmt->bind_param("ssssssssssssssssssss", $article, $brand, $serialNo, $particulars, $eNGAS, $acquisitionDate, $acquisitionCost, $propertyNo, $accountNumber, $estimatedLife, $unitOfMeasure, $unitValue, $quantity, $officeName, $accountablePerson, $scannedDocs, $yearsOfService, $monthlyDepreciation, $accumulatedDepreciation, $bookValue);
+
+               $stmt->execute();
+               $propertyID = $stmt->insert_id();
+
+
+               //Insert data into are_ics_gen_properties table
+               $areICSgenPropertiesQuery = "INSERT INTO are_ics_gen_properties
+               (
+                    propertyID,
+                    dateReceived,
+                    onhandPerCount,
+                    soQty,
+                    soValue,
+                    previousCondition,
+                    location,
+                    currentCondition,
+                    dateOfPhysicalInventory,
+                    remarks,
+                    supplier,
+                    POnumber,
+                    AIRnumber,
+                    notes,
+                    jevNo)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+               $stmt = $connect->prepare($areICSgenPropertiesQuery);
+               $stmt->bind_param("issssssssssssss", $propertyID, $dateReceived, $onhandPerCount, $soQty, $soValue, $previousCondition, $location, $currentCondition, $dateOfPhysicalInventory, $remarks, $supplier, $POnumber, $AIRnumber, $notes, $jevNo);
+
+               $stmt->execute();
+               $ARE_ICS_id = $stmt->insert_id();
+
+
+               $arePropertiesQuery = "INSERT INTO are_properties
+               (
+                    propertyID, ARE_ICS_id, AREno)
+               VALUES(?,?,?)";
+               $stmt=$connect->prepare($arePropertiesQuery);
+               $stmt->bind_param("iis", $propertyID, $ARE_ICS_id, $AREno);
+
+               $stmt->execute();
+          }
+     }
+}
+//Close connection
+$connect->close();
+
+?> 
